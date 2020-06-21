@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <table class="table">
+      <thead class="thead-light">
+        <tr>
+          <th scope="col">Symbol</th>
+          <th scope="col">Name</th>
+          <th scope="col">Shares</th>
+          <th scope="col">Live Price</th>
+          <th scope="col">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+    {% for row in portfolio %}
+      <tr>
+        <th scope="row">{{ row[0] }}</th>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+        <td>{{ row[3] }}</td>
+        <td>{{ row[4] }}</td>
+      </tr>
+    {% endfor %}
+      <tr>
+        <th scope="row">Cash</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ cash }}</td>
+      </tr>
+      <tr>
+        <th scope="row"></th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ final_total }}</td>
+      </tr>
+      </tbody>
+    </table>
+{% endblock %}
