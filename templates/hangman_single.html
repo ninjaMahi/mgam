@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Hangman
+{% endblock %}
+
+{% block main %}
+
+
+    <head>
+    <title>TAG index</title>
+    
+    <style type="text/css">
+    
+
+    .right 
+    { 
+    background-color: rgb(33, 194, 33); 
+    }
+
+    .wrong
+    { 
+    background-color: rgb(255, 0, 0);
+    }
+    
+    </style>
+    
+    </head>
+    <body>
+    <table class="table">
+        <tr>
+            <th class={{letters_dict['a']}}>A</th>
+            <th class={{letters_dict['b']}}>B</th>
+            <th class={{letters_dict['c']}}>C</th>
+            <th class={{letters_dict['d']}}>D</th>
+            <th class={{letters_dict['e']}}>E</th>
+            <th class={{letters_dict['f']}}>F</th>
+            <th class={{letters_dict['g']}}>G</th>
+            <th class={{letters_dict['h']}}>H</th>
+            <th class={{letters_dict['i']}}>I</th>
+            <th class={{letters_dict['j']}}>J</th>
+            <th class={{letters_dict['k']}}>K</th>
+            <th class={{letters_dict['l']}}>L</th>
+            <th class={{letters_dict['m']}}>M</th>
+            <th class={{letters_dict['n']}}>N</th>
+            <th class={{letters_dict['o']}}>O</th>
+            <th class={{letters_dict['p']}}>P</th>
+            <th class={{letters_dict['q']}}>Q</th>
+            <th class={{letters_dict['r']}}>R</th>
+            <th class={{letters_dict['s']}}>S</th>
+            <th class={{letters_dict['t']}}>T</th>
+            <th class={{letters_dict['u']}}>U</th>
+            <th class={{letters_dict['v']}}>V</th>
+            <th class={{letters_dict['w']}}>W</th>
+            <th class={{letters_dict['x']}}>X</th>
+            <th class={{letters_dict['y']}}>Y</th>
+            <th class={{letters_dict['z']}}>Z</th>
+            
+        
+        </tr>
+    </table>
+    
+   
+    <h1>{{incorrect_words_list}}</h1>
+    <h1>{{hearts}}</h1>
+    <h1>{{user_letters_list[0]}} {{user_letters_list[1]}} {{user_letters_list[2]}} {{user_letters_list[3]}} {{user_letters_list[4]}} {{user_letters_list[5]}}</h1>
+    <form action="/hangman_single" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="user_guess" placeholder="Enter Letter" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Guess</button>
+    </form>       
+{% endblock %}

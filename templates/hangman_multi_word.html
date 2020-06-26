@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+
+{% block title %}
+    Game Complete
+{% endblock %}
+
+{% block main %}
+<form action="/hangman_multi_word" method="post">
+    <div class="form-group">
+        <input autocomplete="off" autofocus class="form-control" name="user_word" placeholder="Choose Word" type="text">
+    </div>
+    <button class="btn btn-primary" type="submit">Start</button>
+</form>
+
+{% endblock %}
+
