@@ -6,8 +6,9 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, login_required
 from cs50 import SQL
+import random
 
 #test1
 # Configure application
@@ -27,7 +28,7 @@ def after_request(response):
     return response
 
 # Custom filter
-app.jinja_env.filters["usd"] = usd
+
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -43,115 +44,194 @@ if not SECRET_KEY:
 
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
-
-# Make sure API key is set
-if not os.environ.get("API_KEY"):
-    raise RuntimeError("API_KEY not set")
-
+db = SQL("sqlite:///m-games.db")
 
 @app.route("/")
 @login_required
 def index():
-    """Show portfolio of stocks"""
-    portfolio_data=db.execute("SELECT Symbol,Name,SUM(Shares) FROM history WHERE id = :user GROUP BY Symbol",user=session["user_id"])
-
-    portfolio = []
-    final_total = 0
     
-
-    cash = db.execute("SELECT cash FROM users WHERE id = :user",user=session["user_id"])
-    cash = cash[0]['cash']
-    cash=round(cash,2)
-
-    for row in portfolio_data:
-        stock_info2 = lookup(row['Symbol'])
-
-        total = round(stock_info2['price']*row['SUM(Shares)'],2)
-        final_total += total
-        
-        portfolio.append((stock_info2['symbol'], stock_info2['name'], row['SUM(Shares)'],stock_info2['price'],total))
-
-    final_total=round(final_total+cash ,2)
-
-   
     
-    return render_template("index.html", portfolio=portfolio,final_total=final_total,cash=cash)
+    return render_template("index.html")
 
-
-
-@app.route("/buy", methods=["GET", "POST"])
+@app.route("/hangman_single",methods=["GET", "POST"])
 @login_required
-def buy():
-    """Buy shares of stock"""
-    if request.method == "POST":
+def hangman_single():
+    
+    if request.method == "GET":
+
+        db.execute("DELETE FROM hangman WHERE id =:id",id=session["user_id"])
 
 
 
-        shares = request.form.get("shares")
-        stock = lookup(request.form.get("symbol"))
-        symbol=stock['symbol']
-        name=stock['name']
+        #declaring variables 
+
+        file = open("words.txt", "r")
+        line_list = list()
+        for line in file:
+            line_list.append(line.rstrip('\n'))
+        user_guess_list=list()
+
+        randomline = line_list[random.randint(1, 200)]
+        letter_list = list(randomline)
+        user_letters_list=[" "," "," "," "," "," "]
+        db.execute("INSERT INTO hangman(id,word) VALUES (:id,:word)",
+            id=session["user_id"],word=str(randomline))
+
+        return render_template("hangman_single.html",user_letters_list=user_letters_list)
 
 
-        if not lookup(symbol):
-            return apology("Could not find the stock")
+    else:
 
-        price=stock['price']
-
-        cash = db.execute("SELECT cash FROM users WHERE id = :user",user=session["user_id"])
-        cash = cash[0]['cash']
-
-
-        new_cash = round(cash - price * float(shares),2)
-
-
-        now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-
-        db.execute("INSERT INTO history(id,Symbol,Name,Shares,Price,Total,Transacted) VALUES (:user,:symbol, :name, :shares,:price,:total,:transacted)",
-                user=session["user_id"], symbol=symbol,name=name, shares=shares,price=price,total=price*float(shares),transacted=dt_string)
-
-        db.execute("UPDATE users SET cash = :cash WHERE id = :user",
-                          cash=new_cash, user=session["user_id"])
-
-        flash("Bought!")
-        return redirect("/")
+        word=db.execute("SELECT word FROM hangman WHERE id=:id",id=session["user_id"])
+        print(word)
+        word =word[0]['word']
+        user_letters_list=db.execute("SELECT first,second,third,fourth,fifth,sixth FROM hangman WHERE id=:id",id=session["user_id"])
+        user_letters_list=[user_letters_list[0]['first'],user_letters_list[0]['second'],user_letters_list[0]['third'],user_letters_list[0]['fourth'],user_letters_list[0]['fifth'],user_letters_list[0]['sixth']]
+        lives=db.execute("SELECT lives FROM hangman WHERE id=:id",id=session["user_id"])[0]['lives']
+        total_letters=db.execute("SELECT total_letters FROM hangman WHERE id=:id",id=session["user_id"])[0]['total_letters']
+        print("total_letters : " +str(total_letters))
+        user_letter_guess=request.form.get("user_guess")
 
 
+        hearts="💙"*lives
+        print(lives)
+        print(hearts)
+        if user_letter_guess==word[0]:
+            db.execute("UPDATE hangman SET first = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[1]:
+            db.execute("UPDATE hangman SET second = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[2]:
+            db.execute("UPDATE hangman SET third = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[3]:
+            db.execute("UPDATE hangman SET fourth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
 
+        if user_letter_guess==word[4]:
+            db.execute("UPDATE hangman SET fifth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+
+        if user_letter_guess==word[5]:
+            db.execute("UPDATE hangman SET sixth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        elif user_letter_guess!=word[0] and user_letter_guess!=word[1] and user_letter_guess!=word[2] and user_letter_guess!=word[3] and user_letter_guess!=word[4] and user_letter_guess!=word[5]:
+            lives-=1
+            if lives==0:
+                db.execute("DELETE FROM hangman WHERE id =:id",id=session["user_id"])
+                return render_template("game_over.html",word=word)
+            db.execute("UPDATE hangman SET lives = :lives WHERE id = :user_id", lives=lives,user_id = session["user_id"])
+            hearts="💙"*lives
+            print(lives)
+            print(hearts)
+        
+        if total_letters==6:
+            db.execute("DELETE FROM hangman WHERE id =:id",id=session["user_id"])
+            return render_template("game_complete.html",word=word)
+
+
+
+        user_letters_list=db.execute("SELECT first,second,third,fourth,fifth,sixth FROM hangman WHERE id=:id",id=session["user_id"])
+        user_letters_list=[user_letters_list[0]['first'],user_letters_list[0]['second'],user_letters_list[0]['third'],user_letters_list[0]['fourth'],user_letters_list[0]['fifth'],user_letters_list[0]['sixth']]
+
+        return render_template("hangman_single.html",user_letters_list=user_letters_list,hearts=hearts)
+
+@app.route("/hangman_multi_word",methods=["GET", "POST"])
+@login_required
+def hangman_multi_word():
+    if request.method == "GET":
+
+        db.execute("DELETE FROM hangman WHERE id =:id",id=session["user_id"])
+        return render_template("hangman_multi_word.html")
     
     else:
-        return render_template("buy.html")
+ 
+        letter_list = list(request.form.get("user_word"))
+        user_letters_list=[" "," "," "," "," "," "]
+        db.execute("INSERT INTO hangman(id,word) VALUES (:id,:word)",
+            id=session["user_id"],word=request.form.get("user_word"))
+
+        return render_template("hangman_multi.html",user_letters_list=user_letters_list)
 
 
-@app.route("/history")
+@app.route("/hangman_multi",methods=["GET", "POST"])
 @login_required
-def history():
-    """Show history of transactions"""
-    rows = db.execute("SELECT * FROM history WHERE id = :user ORDER BY Transacted DESC",
-                          user=session["user_id"])
-    cash = db.execute("SELECT cash FROM users WHERE id = :user",
-                          user=session["user_id"])
-    cash = cash[0]['cash']
+def hangman_multi():
     
-    transactions = []
+    if request.method == "GET":
+
+        return render_template("hangman_multi.html",user_letters_list=[" "," "," "," "," "," "])
 
 
+    else:
 
-    for row in rows:
-        stock_info = lookup(row['Symbol'])
+        word=db.execute("SELECT word FROM hangman WHERE id=:id",id=session["user_id"])
+        word =word[0]['word']
+        print(word)
+        user_letters_list=db.execute("SELECT first,second,third,fourth,fifth,sixth FROM hangman WHERE id=:id",id=session["user_id"])
+        user_letters_list=[user_letters_list[0]['first'],user_letters_list[0]['second'],user_letters_list[0]['third'],user_letters_list[0]['fourth'],user_letters_list[0]['fifth'],user_letters_list[0]['sixth']]
+        lives=db.execute("SELECT lives FROM hangman WHERE id=:id",id=session["user_id"])[0]['lives']
+        user_letter_guess=request.form.get("user_guess")
+        total_letters=db.execute("SELECT total_letters FROM hangman WHERE id=:id",id=session["user_id"])[0]['total_letters']
+        print("total_letters : " +str(total_letters))
+
+        hearts="💙"*lives
+        print(lives)
+        print(hearts)
+        if user_letter_guess==word[0]:
+            db.execute("UPDATE hangman SET first = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[1]:
+            db.execute("UPDATE hangman SET second = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[2]:
+            db.execute("UPDATE hangman SET third = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        if user_letter_guess==word[3]:
+            db.execute("UPDATE hangman SET fourth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+
+        if user_letter_guess==word[4]:
+            db.execute("UPDATE hangman SET fifth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+
+        if user_letter_guess==word[5]:
+            db.execute("UPDATE hangman SET sixth = :letter,total_letters= :total WHERE id = :user_id", letter=user_letter_guess,total=total_letters+1,user_id = session["user_id"])
+            total_letters+=1
+        elif user_letter_guess!=word[0] and user_letter_guess!=word[1] and user_letter_guess!=word[2] and user_letter_guess!=word[3] and user_letter_guess!=word[4] and user_letter_guess!=word[5]:
+            lives-=1
+            if lives==0:
+                return render_template("game_over.html",word=word)
+            db.execute("UPDATE hangman SET lives = :lives WHERE id = :user_id", lives=lives,user_id = session["user_id"])
+            hearts="💙"*lives
+            print(lives)
+            print(hearts)
 
 
-        # create a list with all the info about the transaction and append it to a list of every stock transaction
-        transactions.append(list((stock_info['symbol'], stock_info['name'], row['Shares'], row['Price'],row['Price'] * float(row['Shares']),row['Transacted'])))
+        if total_letters==6:
+            db.execute("DELETE FROM hangman WHERE id =:id",id=session["user_id"])
+            return render_template("game_complete.html",word=word)
+
+        user_letters_list=db.execute("SELECT first,second,third,fourth,fifth,sixth FROM hangman WHERE id=:id",id=session["user_id"])
+        user_letters_list=[user_letters_list[0]['first'],user_letters_list[0]['second'],user_letters_list[0]['third'],user_letters_list[0]['fourth'],user_letters_list[0]['fifth'],user_letters_list[0]['sixth']]
+
+        return render_template("hangman_multi.html",user_letters_list=user_letters_list,hearts=hearts)
+
+@app.route("/hangman",methods=["GET", "POST"])
+@login_required
+def hangman():
+    
+    if request.method == "GET":
+        return render_template("hangman_game_choice.html")
+        
+    else:
+        if request.form.get('hangman_choice') == 'normal':
+            return redirect("/hangman_single")
+        elif request.form.get('hangman_choice') == 'multi':
+            return redirect("/hangman_multi_word")
 
     
-    print(transactions)
-    return render_template("history.html", transactions=transactions)
-
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -195,21 +275,6 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
-
-@app.route("/quote", methods=["GET", "POST"])
-@login_required
-def quote():
-    """Get stock quote."""
-    if request.method == "POST":
-
-        stock = lookup(request.form.get("symbol"))
-
-        if not stock:
-            return apology("Could not find the stock")
-
-        return render_template("quoted.html", stock=stock)
-    else:
-        return render_template("quote.html", stock="")
 
 
 
@@ -257,63 +322,6 @@ def register():
         return render_template("register.html")
 
 
-
-
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
-def sell():
-    """Sell shares of stock"""
-    if request.method == "POST":
-
-
-
-        shares = request.form.get("sell_shares")
-        stock = lookup(request.form.get("sell_symbol"))
-        symbol=stock['symbol']
-        name=stock['name']
-        live_price=stock['price']
-
-
-        if not lookup(symbol):
-            return apology("Could not find the stock")
-
-
-
-        cash = db.execute("SELECT cash FROM users WHERE id = :user",user=session["user_id"])
-        cash = cash[0]['cash']
-
-        portfolio = db.execute("SELECT Symbol FROM history WHERE id = :user",user=session["user_id"])
-        stocks_owned=[]
-
-        for i in portfolio:
-
-            stocks_owned.append(i)
-
-        new_cash = cash + live_price * float(shares)
-
-        if not portfolio:
-
-            return apology("Oops,Looks like you do not own the stock!")
-
-
-
-        now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-
-        db.execute("INSERT INTO history(id,Symbol,Name,Shares,Price,Total,Transacted) VALUES (:user,:symbol, :name, :shares,:price,:total,:transacted)",
-                user=session["user_id"], symbol=symbol,name=name, shares= -int(shares),price=live_price,total=live_price*float(shares),transacted=dt_string)
-
-        db.execute("UPDATE users SET cash = :cash WHERE id = :user",
-                          cash=new_cash, user=session["user_id"])
-        flash("Sold!")
-
-        return redirect("/")
-
-
-
-    
-    else:
-        return render_template("sell.html")
 
 @app.route("/change_password", methods=["GET", "POST"])
 @login_required
