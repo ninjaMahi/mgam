@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Hangman Game Choice
+{% endblock %}
+
+{% block main %}
+<form action="/hangman" method="post">
+    
+    <form action="/hangman">
+        <button type="button" name = "hangman_choice" class="btn btn-primary btn-lg btn-block" value = "normal" onclick="location.href='/hangman_single'" >
+            Normal</button>
+    </form>
+    <br>
+    <form action="/hangman">
+        <button type="button" name = "hangman_choice" class="btn btn-danger btn-lg btn-block" value = "multi" onclick="location.href='/hangman_multi_word'" >
+            Multiplayer'</button>
+    </form>
+    
+    
+</form>
+   
+{% endblock %}

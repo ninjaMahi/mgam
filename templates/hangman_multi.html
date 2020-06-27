@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Hangman
+{% endblock %}
+
+{% block main %}
+
+    <h1>{{hearts}}</h1>
+    <h1>{{user_letters_list[0]}} {{user_letters_list[1]}} {{user_letters_list[2]}} {{user_letters_list[3]}} {{user_letters_list[4]}} {{user_letters_list[5]}}</h1>
+    <form action="/hangman_multi" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="user_guess" placeholder="Enter Letter" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Guess</button>
+    </form>       
+{% endblock %}
