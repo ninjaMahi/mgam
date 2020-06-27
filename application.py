@@ -270,8 +270,7 @@ def hangman():
             return redirect("/hangman_single")
         elif request.form.get('hangman_choice') == 'multi':
             return redirect("/hangman_multi_word")
-
-    
+   
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
